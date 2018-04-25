@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<info>
+    <id>user_openidc</id>
+    <name>User OpenIDC</name>
+    <description>
+        User backend providing OpenID Connect authentication method to ownCloud
+    </description>
+    <version>0.2.0</version>
+    <licence>AGPL</licence>
+    <!-- <screenshot small-thumbnail=""></screenshot> -->
+    <category>security</category>
+    <summary>OpenID Connect User Backend</summary>
+
+    <types>
+        <prelogin/>
+        <authentication/>
+        <prevent_group_restriction/>
+    </types>
+    <documentation>
+        <user>https://doc.owncloud.org/server/latest/user_manual/</user>
+        <admin>https://doc.owncloud.org/server/latest/admin_manual/</admin>
+        <developer>https://github.com/owncloud/contacts/blob/master/README.md</developer>
+    </documentation>
+
+    <author>Miroslav Bauer @ CESNET</author>
+    <namespace>UserOpenIDC</namespace>
+    <website>https://github.com/CESNET/user_openidc</website>
+    <bugs>https://github.com/CESNET/user_openidc/issues</bugs>
+    <repository type="git">https://github.com/CESNET/user_openidc.git</repository>
+    <ocsid>2715</ocsid>
+
+    <dependencies>
+        <php min-version="5.6" max-version="7.2"/>
+        <database>sqlite</database>
+        <database>pgsql</database>
+        <database>mysql</database>
+        <owncloud min-version="10.0.4" max-version="10.1"/>
+    </dependencies>
+
+    <settings>
+        <admin>OCA\UserOpenIDC\Settings\AdminPanel</admin>
+    </settings>
+</info>

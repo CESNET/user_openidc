@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpunit bootstrap="./tests/bootstrap.php"
+		 verbose="true"
+		 failOnWarning="true"
+		 timeoutForSmallTests="900"
+		 timeoutForMediumTests="900"
+		 timeoutForLargeTests="900"
+		>
+	<testsuite name='unit'>
+		<directory>./tests/unit</directory>
+	</testsuite>
+</phpunit>
