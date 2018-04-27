@@ -45,6 +45,8 @@
                                 OC.AppConfig.setValue('user_openidc', 'backend_required_claims', cRequiredArray.join());
                                 $('#user-openidc-save-indicator').removeData('save-set-claim-required');
                                 OC.msg.finishedSaving('#user-openidc-save-indicator', {status: 'success', data: {message: t('user_openidc', 'Saved')}});
+                        } else {
+                                OC.msg.finishedSaving('#user-openidc-save-indicator', {status: 'error', data: {message: t('user_openidc', 'Unsupported claim')}});
                         }
                 });
         },
@@ -59,6 +61,8 @@
                                 OC.AppConfig.setValue('user_openidc', 'backend_required_claims', cRequiredArray.join());
                                 $('#user-openidc-save-indicator').removeData('save-unset-claim-required');
                                 OC.msg.finishedSaving('#user-openidc-save-indicator', {status: 'success', data: {message: t('user_openidc', 'Saved')}});
+                        } else {
+                                OC.msg.finishedSaving('#user-openidc-save-indicator', {status: 'error', data: {message: t('user_openidc', 'Unsupported claim')}});
                         }
                 });
 

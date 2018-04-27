@@ -58,7 +58,7 @@ class LoginController extends Controller {
 	/**
 	 * This method is associated with a route on which the OpenID Connect
 	 * protection must be enforced by Apache.
-	 * It initiates an internal login procedure and then, if succesfull,
+	 * It initiates an internal login procedure and then, if successfull,
 	 * redirects to the desired page. Call to $session->login() is
 	 * handled by this app's UserBackend 'checkPassword' method.
 	 *
