@@ -10,16 +10,16 @@ autoprovisioning of the users based on OpenID claims received from the OP.
 
 # Getting started
 
-This application relies on a 3rd-party module for handling the communication
+This application relies on a 3rd-party module for handling of the communication
 between the RP and OP. For Apache webserver, we recommend installing the [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc)
 module.
 
 The following Apache siteconfig settings will configure a special Location for handling
 user logins using the OIDC backend, the required special OIDC callback URI and OIDC coverage of
-Admin settings. Other locations are then covered by ownCloud session management. This
+Admin settings. Other locations are then covered by the ownCloud session management. This
 allows for multiple authentication methods to still be possible on your ownCloud
-instance (e.g. OAuth2 for sync clients, Apache baseauth). For a full module configuration
-documentation, please refer to the [wiki](https://github.com/zmartzone/mod_auth_openidc/wiki).
+instance (e.g. OAuth2 for sync clients, Apache baseauth). Please refer to the [wiki](https://github.com/zmartzone/mod_auth_openidc/wiki)
+for a full module configuration documentation.
 ```
 OIDCRedirectURI https://oidc.client.com/oidc_callback
 OIDCProviderMetadataURL https://oidc.provider.com/.well-known/openid-configuration
@@ -62,6 +62,7 @@ OIDC mapping to ownCloud and user backend settings could be configured from here
         * Logon only - this mode means that only existing ownCloud accounts can log in.
                         Assumes that user provisioning is done by another method (e.g. manual, LDAP, AD,...).
         * Provisioning - this mode autoprovisions new user accounts from provided OIDC claims on logon when necessary.
+* **Update user information on login** - if enabled, an user account will be updated with provided information (such as e-mail address, display name,...) when the user logs in using this app.
 
 ## Mapping configuration
 

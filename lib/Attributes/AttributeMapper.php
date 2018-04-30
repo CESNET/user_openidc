@@ -117,7 +117,7 @@ class AttributeMapper {
 	 *
 	 * @return string e-mail address | null for invalid or missing address
 	 */
-	public function getEmail() {
+	public function getEMailAddress() {
 		$email = $this->getClaimValue('claim_email');
 		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 			return $email;

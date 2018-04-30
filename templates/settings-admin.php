@@ -113,7 +113,7 @@ style('user_openidc', 'settings-admin');
 						</option>
 					<?php endforeach;?>
 				</select>
-				<input type="checkbox" class="user-openidc-required"
+				<input type="checkbox" class="checkbox user-openidc-required"
 					name="claim_displayname"
 					id="user-openidc-dn_required" value="0"
 <?php if (in_array('claim_displayname', $_['required_claims'])) {
@@ -141,7 +141,7 @@ style('user_openidc', 'settings-admin');
 						</option>
 				<?php endforeach;?>
 				</select>
-				<input type="checkbox" class="user-openidc-required"
+				<input type="checkbox" class="checkbox user-openidc-required"
 					name="claim_email"
 					id="user-openidc-email_required" value="0"
 <?php if (in_array('claim_email', $_['required_claims'])) {
@@ -160,6 +160,14 @@ style('user_openidc', 'settings-admin');
 
 		<div id="user-openidc-backend">
 			<h3><?php p($l->t('OpenID Connect backend configuration')) ?></h3>
+			<input type="checkbox" class="checkbox user-openidc-setting"
+				name="backend_autoupdate" id="user-openidc-autoupdate" value="1"
+				<?php if ($_['backend_autoupdate'] === 'yes')
+					print_unescaped('checked="checked"'); ?> >
+			</input>
+			<label for="user-openidc-autoupdate">
+				<?php p($l->t('Update user information on login')); ?>
+			</label>
 		</div>
 	</div>
 </div>

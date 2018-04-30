@@ -28,22 +28,22 @@ class AdminPanel implements ISettings {
 	/** @var IRequest */
 	private $request;
 	/** @var AppConfig */
-	private $appConfig;
+	private $config;
 	/** @var AttributeMapper */
 	private $attrMapper;
 
 	/**
 	 * AdminPanel constructor.
 	 *
-	 * @param AppConfig $appConfig
+	 * @param AppConfig $config
 	 * @param IRequest $request
 	 * @param AttributeMapper $attrMapper
 	 */
-	public function __construct(AppConfig $appConfig, IRequest $request,
+	public function __construct(AppConfig $config, IRequest $request,
 		AttributeMapper $attrMapper
 	) {
 		$this->appName = 'user_openidc';
-		$this->appConfig = $appConfig;
+		$this->config = $config;
 		$this->request = $request;
 		$this->attrMapper = $attrMapper;
 	}
@@ -69,8 +69,8 @@ class AdminPanel implements ISettings {
 	 * @return Template panel content
 	 */
 	public function getPanel() {
-		$t = new Template('user_openidc', 'settings-admin');
-		$backendMode = $this->appConfig->getValue($this->appName, 'backend_mode', 'inactive');
+		$backendMode = $this->config->getValue($this->appName, 'backend_mode', 'inactive');
+		$backendAutoupdate = $this->config->getValue($this->appName, 'backend_autoupdate', 'no');
 		$oidcPrefix = $this->attrMapper->getClaimPrefix();
 		$oidcClaims = array_filter(
 			$this->request->server,
@@ -84,7 +84,9 @@ class AdminPanel implements ISettings {
 		$claimEmail = $this->attrMapper->getClaimName('claim_email');
 		$requiredClaims = $this->attrMapper->getRequiredClaims();
 
+		$t = new Template('user_openidc', 'settings-admin');
 		$t->assign('backend_mode', $backendMode);
+		$t->assign('backend_autoupdate', $backendAutoupdate);
 		$t->assign('mapping_prefix', $oidcPrefix);
 		$t->assign('mapping_userid', $claimUserid);
 		$t->assign('mapping_dn', $claimDn);

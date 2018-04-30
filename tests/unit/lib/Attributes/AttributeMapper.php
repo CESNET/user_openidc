@@ -184,9 +184,9 @@ class AttributeMapperTest extends TestCase {
 	 *
 	 * @return null
 	 */
-	public function testGetEmail($expected, $oidcClaims) {
+	public function testGetEMailAddress($expected, $oidcClaims) {
 		$this->request->server = $oidcClaims;
-		$actual = $this->attrMapper->getEmail();
+		$actual = $this->attrMapper->getEMailAddress();
 		$this->assertSame($expected, $actual);
 	}
 

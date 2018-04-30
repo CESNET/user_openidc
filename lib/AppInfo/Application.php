@@ -15,6 +15,7 @@ namespace OCA\UserOpenIDC\AppInfo;
 use OCP\AppFramework\App;
 use OCA\UserOpenIDC\UserBackend;
 use OCA\UserOpenIDC\GroupBackend;
+use OCA\UserOpenIDC\Hooks\UserHooks;
 use OCA\UserOpenIDC\Controller\LoginController;
 use OCA\UserOpenIDC\Attributes\AttributeMapper;
 
@@ -60,6 +61,18 @@ class Application extends App {
 			}
 		);
 		$container->registerService(
+			'UserHooks', function ($c) {
+				return new UserHooks(
+					$c->query('AppName'),
+					$c->query('AppConfig'),
+					$c->query('Request'),
+					$c->query('AttributeMapper'),
+					$c->query('UserManager'),
+					$c->query('Logger')
+				);
+			}
+		);
+		$container->registerService(
 			'GroupBackend', function ($c) {
 				return new GroupBackend(
 				);
@@ -94,12 +107,12 @@ class Application extends App {
 		);
 		$container->registerService(
 			'UserManager', function ($c) {
-				return \OC::$server->getUserManager();
+				return $c->query('ServerContainer')->getUserManager();
 			}
 		);
 		$container->registerService(
 			'GroupManager', function ($c) {
-				return \OC::$server->getGroupManager();
+				return $c->query('ServerContainer')->getGroupManager();
 			}
 		);
 		$container->registerService(
