@@ -74,16 +74,6 @@ class UserHooks {
 			}
 		);
 		$this->userManager->listen(
-			'\OC\User', 'postCreateUser', function ($user, $password) {
-				$this->postCreateUserHook($user, $password);
-			}
-		);
-		$this->userManager->listen(
-			'\OC\User', 'postDelete', function ($user) {
-				$this->postDeleteHook($user);
-			}
-		);
-		$this->userManager->listen(
 			'\OC\User', 'logout', function () {
 				$this->logoutHook();
 			}
