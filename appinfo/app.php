@@ -17,15 +17,23 @@ $app = new Application();
 $c = $app->getContainer();
 $urlGenerator = $c->query('URLGenerator');
 $appName = $c->query('AppName');
+$request = $c->query('Request');
 
 if (!\OC::$CLI) {
-	// properly register OIDC user & group backends
+	// properly register OIDC user & group backends and event hooks
 	$c->query('UserManager')->registerBackend($c->query('UserBackend'));
 	$c->query('GroupManager')->addBackend($c->query('GroupBackend'));
+	$c->query('UserHooks')->connectHooks();
 
+	// build an alternative login link url
+	$requestParams = $request->getParams();
+	$loginParams = array('requesttoken' => \OCP\Util::callRegister());
+	if (array_key_exists('redirect_url', $requestParams)) {
+		$loginParams['redirect_url'] = $requestParams['redirect_url'];
+	}
 	$loginRoute = $urlGenerator->linkToRoute(
 		'user_openidc.login.tryLogin',
-		array('requesttoken' => \OCP\Util::callRegister())
+		$loginParams
 	);
 	\OC_App::registerLogIn(
 		array(
