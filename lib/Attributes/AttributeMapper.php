@@ -15,6 +15,7 @@ namespace OCA\UserOpenIDC\Attributes;
 use \OC\AppConfig;
 use \OCP\IRequest;
 use \OCP\ILogger;
+use \OCA\UserOpenIDC\Util;
 
 /**
  * Attribute mapper class repsponsible for mapping
@@ -53,7 +54,9 @@ class AttributeMapper {
 	 * @return string configured prefix or an empty string
 	 */
 	public function getClaimPrefix() {
-		return $this->config->getValue($this->appName, 'claim_prefix', 'OIDC_CLAIM_');
+		return $this->config->getValue(
+			$this->appName, Util::CLAIM_PREFIX, Util::CLAIM_PREFIX_DEFAULT
+		);
 	}
 	/**
 	 * Returns a prefixed OIDC claim name
@@ -64,8 +67,8 @@ class AttributeMapper {
 	 */
 	public function getClaimName($attribute) {
 		$claimName = $this->config->getValue($this->appName, $attribute, null);
-		$prefix = $this->getClaimPrefix();
 		if ($claimName) {
+			$prefix = $this->getClaimPrefix();
 			if (substr($claimName, 0, strlen($prefix)) !== $prefix) {
 				return $prefix . $claimName;
 			} else {
@@ -92,7 +95,7 @@ class AttributeMapper {
 	 * @return string user account id | null for invalid or missing sub
 	 */
 	public function getUserID() {
-		$userid = $this->getClaimValue('claim_userid');
+		$userid = $this->getClaimValue(Util::CLAIM_UID);
 		if (!preg_match("/^[a-zA-Z0-9_\.@-]*$/", $userid, $match)) {
 			$this->logger->warning('Invalid or missing OIDC sub:' . $userid, $this->logCtx);
 			return null;
@@ -105,7 +108,7 @@ class AttributeMapper {
 	 * @return string display name | null for invalid or missing dn claim
 	 */
 	public function getDisplayName() {
-		$dn = $this->getClaimValue('claim_displayname');
+		$dn = $this->getClaimValue(Util::CLAIM_DN);
 		if (!preg_match("/^[^<>$#!%&\*\\_\+\.@-]*$/", $dn, $match)) {
 			$this->logger->warning('Invalid or missing OIDC DN:' . $dn, $this->logCtx);
 			return null;
@@ -118,7 +121,7 @@ class AttributeMapper {
 	 * @return string e-mail address | null for invalid or missing address
 	 */
 	public function getEMailAddress() {
-		$email = $this->getClaimValue('claim_email');
+		$email = $this->getClaimValue(Util::CLAIM_EMAIL);
 		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 			return $email;
 		} else {
@@ -135,13 +138,13 @@ class AttributeMapper {
 		$required = explode(
 			',', $this->config->getValue(
 				$this->appName,
-				'backend_required_claims',
-				'claim_userid'
+				Util::REQUIRED_CLAIMS,
+				Util::CLAIM_UID
 			)
 		);
 		$required = array_filter($required);
-		if (!in_array('claim_userid', $required)) {
-			$required[] = 'claim_userid';
+		if (!in_array(Util::CLAIM_UID, $required)) {
+			$required[] = Util::CLAIM_UID;
 		}
 		return $required;
 

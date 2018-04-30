@@ -87,7 +87,7 @@ class UserHooks {
 	 * @return null
 	 */
 	public function postLoginHook(IUser $user) {
-		if ($this->config->getValue($this->appName, 'backend_autoupdate', 'no') !== 'yes') {
+		if ($this->config->getValue($this->appName, Util::AUTOUPDATE, 'no') !== 'yes') {
 			return;
 		}
 		$storedDn = $user->getDisplayName();

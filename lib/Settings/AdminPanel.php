@@ -13,10 +13,11 @@
 namespace OCA\UserOpenIDC\Settings;
 
 use \OC\AppConfig;
-use OCP\Settings\ISettings;
-use OCP\Template;
-use OCP\IRequest;
-use OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCP\Settings\ISettings;
+use \OCP\Template;
+use \OCP\IRequest;
+use \OCA\UserOpenIDC\Util;
+use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 
 /**
  * AdminPanel class registered to admin
@@ -69,8 +70,8 @@ class AdminPanel implements ISettings {
 	 * @return Template panel content
 	 */
 	public function getPanel() {
-		$backendMode = $this->config->getValue($this->appName, 'backend_mode', 'inactive');
-		$backendAutoupdate = $this->config->getValue($this->appName, 'backend_autoupdate', 'no');
+		$backendMode = $this->config->getValue($this->appName, Util::MODE, 'inactive');
+		$backendAutoupdate = $this->config->getValue($this->appName, Util::AUTOUPDATE, 'no');
 		$oidcPrefix = $this->attrMapper->getClaimPrefix();
 		$oidcClaims = array_filter(
 			$this->request->server,
@@ -79,9 +80,9 @@ class AdminPanel implements ISettings {
 			},
 			ARRAY_FILTER_USE_KEY
 		);
-		$claimUserid = $this->attrMapper->getClaimName('claim_userid');
-		$claimDn = $this->attrMapper->getClaimName('claim_displayname');
-		$claimEmail = $this->attrMapper->getClaimName('claim_email');
+		$claimUserid = $this->attrMapper->getClaimName(Util::CLAIM_UID);
+		$claimDn = $this->attrMapper->getClaimName(Util::CLAIM_DN);
+		$claimEmail = $this->attrMapper->getClaimName(Util::CLAIM_EMAIL);
 		$requiredClaims = $this->attrMapper->getRequiredClaims();
 
 		$t = new Template('user_openidc', 'settings-admin');

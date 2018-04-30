@@ -18,6 +18,7 @@ use \OCP\ILogger;
 use \OCP\IUserManager;
 use \OCP\Security\ISecureRandom;
 use \OCP\IUserBackend;
+use \OCA\UserOpenIDC\Util;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 
 /**
@@ -85,8 +86,7 @@ class UserBackend extends Backend implements IUserBackend {
 	 * returns the user id or false
 	 */
 	public function checkPassword($uid=null, $password=null) {
-		$mode = $this->config->getValue($this->appName, 'backend_mode');
-
+		$mode = $this->config->getValue($this->appName, Util::MODE, 'inactive');
 		if ($mode === 'inactive' || !$this->checkClaims()) {
 			return false;
 		}
