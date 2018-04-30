@@ -15,6 +15,7 @@
 use \OCP\IUser;
 use \OCP\ILogger;
 use \OCP\IRequest;
+use \OCP\IAppConfig;
 use \OCP\IUserManager;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Util;
@@ -26,6 +27,8 @@ class UserHooks {
 
 	/** @var string **/
 	private $appName;
+	/** @var IAppConfig **/
+	private $config;
 	/** @var IRequest **/
 	private $request;
 	/** @var AttributeMapper */
@@ -41,15 +44,17 @@ class UserHooks {
 	 * UserHooks constructor
 	 *
 	 * @param string $appName
+	 * @param IAppConfig $config
 	 * @param IRequest $request
 	 * @param AttributeMapper $attrMapper
 	 * @param IUserManager $userManager
 	 * @param ILogger $logger
 	 */
-	public function __construct($appName, IRequest $request,
+	public function __construct($appName, IAppConfig $config, IRequest $request,
 		AttributeMapper $attrMapper, IUserManager $userManager, ILogger $logger
 	) {
 		$this->appName = $appName;
+		$this->config = $config;
 		$this->request = $request;
 		$this->attrMapper = $attrMapper;
 		$this->userManager = $userManager;
@@ -92,6 +97,9 @@ class UserHooks {
 	 * @return null
 	 */
 	public function postLoginHook(IUser $user) {
+		if ($this->config->getValue($this->appName, 'backend_autoupdate', 'no') !== 'yes') {
+			return;
+		}
 		$storedDn = $user->getDisplayName();
 		$actualDn = $this->attrMapper->getDisplayName();
 		$storedEMail = $user->getEMailAddress();

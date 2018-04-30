@@ -15,6 +15,7 @@ namespace OCA\UserOpenIDC\Tests\Unit\Hooks;
 use \OCP\IUser;
 use \OCP\ILogger;
 use \OCP\IRequest;
+use \OCP\IAppConfig;
 use \OCP\IUserManager;
 use \Test\TestCase;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
@@ -30,6 +31,8 @@ class UserHooksTest extends TestCase {
 
 	/** @var ILogger | PHPUnit_Framework_MockObject_MockObject */
 	private $logger;
+	/** @var IAppConfig | PHPUnit_Framework_MockObject_MockObject */
+	private $config;
 	/** @var IRequest | PHPUnit_Framework_MockObject_MockObject */
 	private $request;
 	/** @var AttributeMapper | \PHPUnit_Framework_MockObject_MockObject */
@@ -48,10 +51,11 @@ class UserHooksTest extends TestCase {
 		parent::setUp();
 
 		$this->logger = $this->createMock(ILogger::class);
+		$this->config = $this->createMock(IAppConfig::class);
 		$this->request = $this->createMock(IRequest::class);
 		$this->request->expects($this->any())
 			->method('getServerProtocol')
-			->willReturn(true);
+			->willReturn('https');
 		$this->attrMapper = $this->createMock(AttributeMapper::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		$this->user = $this->createMock(IUser::class);
@@ -61,8 +65,20 @@ class UserHooksTest extends TestCase {
 		$this->user->expects($this->any())
 			->method('getEMailAddress')
 			->willReturn('user0@nomail.com');
+	}
+	/**
+	 * @param string $autoupdate yes|no
+	 *
+	 * @return null
+	 */
+	public function constructUserHooks($autoupdate='yes') {
+		$this->config->expects($this->any())
+			->method('getValue')
+			->with('user_openidc', 'backend_autoupdate', 'no')
+			->willReturn($autoupdate);
 		$this->userHooks = new UserHooks(
 			'user_openidc',
+			$this->config,
 			$this->request,
 			$this->attrMapper,
 			$this->userManager,
@@ -80,6 +96,7 @@ class UserHooksTest extends TestCase {
 		$this->user->expects($this->once())
 			->method('setDisplayName')
 			->with($expected);
+		$this->constructUserHooks();
 		$this->userHooks->postLoginHook($this->user);
 	}
 	/**
@@ -91,6 +108,7 @@ class UserHooksTest extends TestCase {
 			->willReturn($this->user->getDisplayName());
 		$this->user->expects($this->never())
 			->method('setDisplayName');
+		$this->constructUserHooks();
 		$this->userHooks->postLoginHook($this->user);
 	}
 	/**
@@ -101,6 +119,7 @@ class UserHooksTest extends TestCase {
 			->method('getDisplayName')
 			->willReturn(null);
 		$this->user->expects($this->never())->method('setDisplayName');
+		$this->constructUserHooks();
 		$this->userHooks->postLoginHook($this->user);
 	}
 	/**
@@ -114,6 +133,7 @@ class UserHooksTest extends TestCase {
 		$this->user->expects($this->once())
 			->method('setEMailAddress')
 			->with($expected);
+		$this->constructUserHooks();
 		$this->userHooks->postLoginHook($this->user);
 	}
 	/**
@@ -125,6 +145,7 @@ class UserHooksTest extends TestCase {
 			->willReturn($this->user->getEMailAddress());
 		$this->user->expects($this->never())
 			->method('setEMailAddress');
+		$this->constructUserHooks();
 		$this->userHooks->postLoginHook($this->user);
 	}
 	/**
@@ -135,6 +156,18 @@ class UserHooksTest extends TestCase {
 			->method('getEMailAddress')
 			->willReturn(null);
 		$this->user->expects($this->never())->method('setEMailAddress');
+		$this->constructUserHooks();
+		$this->userHooks->postLoginHook($this->user);
+	}
+	/**
+	 * @return null
+	 */
+	public function testPostLoginWontUpdateAnythingWhenAutoupdateOff() {
+		$this->attrMapper->method('getEMailAddress')->willReturn('never@called.com');
+		$this->attrMapper->method('getDisplayName')->willReturn('Never Called');
+		$this->user->expects($this->never())->method('setDisplayName');
+		$this->user->expects($this->never())->method('setEMailAddress');
+		$this->constructUserHooks('no');
 		$this->userHooks->postLoginHook($this->user);
 	}
 }

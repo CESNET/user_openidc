@@ -64,6 +64,8 @@ class Application extends App {
 			'UserHooks', function ($c) {
 				return new UserHooks(
 					$c->query('AppName'),
+					$c->query('AppConfig'),
+					$c->query('Request'),
 					$c->query('AttributeMapper'),
 					$c->query('UserManager'),
 					$c->query('Logger')
