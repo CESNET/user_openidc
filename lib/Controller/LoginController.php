@@ -20,6 +20,7 @@ use \OCP\IUserSession;
 use \OCP\AppFramework\Controller;
 use \OCP\AppFramework\Http\RedirectResponse;
 use \OCP\AppFramework\Http\TemplateResponse;
+use \OCA\UserOpenIDC\Util;
 
 /**
  * LoginController class responsible for handling
@@ -98,26 +99,13 @@ class LoginController extends Controller {
 				}
 			}
 		} else {
-			if ($this->request->getCookie('mod_auth_openidc_session')) {
-				/**
-				 * Something went wrong on the OIDC Provider side
-				 * (e.g. the User didn't provide all the scopes required).
-				 * Let the User try again by removing the OIDC session cookie.
-				 * TODO: DI, like in the \OC\User\Session:unsetMagicInCookie
-				 */
-				$secureCookie = $this->request->getServerProtocol() === 'https';
-				unset($_COOKIE['mod_auth_openidc_session']);
-				\setcookie(
-					'mod_auth_openidc_session', '',
-					\time() - 3600, \OC::$WEBROOT, '',
-					$secureCookie, true
-				);
-				\setcookie(
-					'mod_auth_openidc_session', '',
-					\time() - 3600, \OC::$WEBROOT . '/', '',
-					$secureCookie, true
-				);
-			}
+			/**
+			 * Something went wrong on the OIDC Provider side
+			 * (e.g. the User didn't provide all the scopes required).
+			 * Let the User try again by removing the OIDC session cookie.
+			 */
+			Util::unsetOIDCSessionCookie($this->request);
+
 			$this->logger->error('OIDC login failed.', $this->logCtx);
 			return new TemplateResponse('', '403', array(), 'guest');
 		}

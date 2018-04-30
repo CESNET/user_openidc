@@ -14,10 +14,12 @@ namespace OCA\UserOpenIDC\Tests\Unit\Hooks;
 
 use \OCP\IUser;
 use \OCP\ILogger;
+use \OCP\IRequest;
 use \OCP\IUserManager;
 use \Test\TestCase;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Hooks\UserHooks;
+use \OCA\UserOpenIDC\Util;
 
 /**
  * Class UserHooksTest
@@ -28,6 +30,8 @@ class UserHooksTest extends TestCase {
 
 	/** @var ILogger | PHPUnit_Framework_MockObject_MockObject */
 	private $logger;
+	/** @var IRequest | PHPUnit_Framework_MockObject_MockObject */
+	private $request;
 	/** @var AttributeMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $attrMapper;
 	/** @var IUserManager | \PHPUnit_Framework_MockObject_MockObject */
@@ -44,6 +48,10 @@ class UserHooksTest extends TestCase {
 		parent::setUp();
 
 		$this->logger = $this->createMock(ILogger::class);
+		$this->request = $this->createMock(IRequest::class);
+		$this->request->expects($this->any())
+			->method('getServerProtocol')
+			->willReturn(true);
 		$this->attrMapper = $this->createMock(AttributeMapper::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		$this->user = $this->createMock(IUser::class);
@@ -55,6 +63,7 @@ class UserHooksTest extends TestCase {
 			->willReturn('user0@nomail.com');
 		$this->userHooks = new UserHooks(
 			'user_openidc',
+			$this->request,
 			$this->attrMapper,
 			$this->userManager,
 			$this->logger

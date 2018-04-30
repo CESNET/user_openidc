@@ -12,10 +12,12 @@
 
  namespace OCA\UserOpenIDC\Hooks;
 
-use OCP\IUser;
-use OCP\ILogger;
-use OCP\IUserManager;
-use OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCP\IUser;
+use \OCP\ILogger;
+use \OCP\IRequest;
+use \OCP\IUserManager;
+use \OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCA\UserOpenIDC\Util;
 
 /**
  * @package OCA\UserOpenIDC\Hooks
@@ -24,6 +26,8 @@ class UserHooks {
 
 	/** @var string **/
 	private $appName;
+	/** @var IRequest **/
+	private $request;
 	/** @var AttributeMapper */
 	private $attrMapper;
 	/** @var IUserManager */
@@ -37,14 +41,16 @@ class UserHooks {
 	 * UserHooks constructor
 	 *
 	 * @param string $appName
+	 * @param IRequest $request
 	 * @param AttributeMapper $attrMapper
 	 * @param IUserManager $userManager
 	 * @param ILogger $logger
 	 */
-	public function __construct($appName, AttributeMapper $attrMapper,
-		IUserManager $userManager, ILogger $logger
+	public function __construct($appName, IRequest $request,
+		AttributeMapper $attrMapper, IUserManager $userManager, ILogger $logger
 	) {
 		$this->appName = $appName;
+		$this->request = $request;
 		$this->attrMapper = $attrMapper;
 		$this->userManager = $userManager;
 		$this->logger = $logger;
@@ -99,5 +105,14 @@ class UserHooks {
 				$user->setEMailAddress($actualEMail);
 			}
 		}
+	}
+	/**
+	 * Destroys an OIDC session for the user if it exists and then
+	 * initiates a standard logout.
+	 *
+	 * @return null
+	 */
+	public function logoutHook() {
+		Util::unsetOIDCSessionCookie($this->request);
 	}
 }
