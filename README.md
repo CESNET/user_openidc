@@ -62,6 +62,7 @@ OIDC mapping to ownCloud and user backend settings could be configured from here
         * Logon only - this mode means that only existing ownCloud accounts can log in.
                         Assumes that user provisioning is done by another method (e.g. manual, LDAP, AD,...).
         * Provisioning - this mode autoprovisions new user accounts from provided OIDC claims on logon when necessary.
+* **Update user information on login** - if enabled, an user account will be updated with provided information (such as e-mail address, display name,...) when the user logs in using this app.
 
 ## Mapping configuration
 
