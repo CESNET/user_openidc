@@ -40,7 +40,8 @@ class Util {
 	 */
 	public static function unsetOIDCSessionCookie(IRequest $request) {
 		$cookieName = Util::OIDC_COOKIE_NAME;
-		if (in_array($cookieName, $_COOKIE)
+
+		if (array_key_exists($cookieName, $_COOKIE)
 			&& $request->getCookie($cookieName)
 		) {
 			$secure = $request->getServerProtocol() === 'https';
