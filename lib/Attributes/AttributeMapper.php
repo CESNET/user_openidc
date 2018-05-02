@@ -84,10 +84,14 @@ class AttributeMapper {
 	 * @return string value of claim corresponding to attribute name | null if not exists
 	 */
 	public function getClaimValue($attribute) {
-		$claimName = $this->getClaimName($attribute);
-		if ($claimName && isset($this->request->server[$claimName])) {
-			return $this->request->server[$claimName];
+		$name = $this->getClaimName($attribute);
+		if ($name && isset($this->request->server[$name])) {
+			$value = $this->request->server[$name];
+			if ($this->validate($attribute, $value)) {
+				return $value;
+			}
 		}
+		$this->logger->warning('Invalid or missing OIDC claim:' . $name, $this->logCtx);
 	}
 	/**
 	 * Obtain ownCloud User ID from OIDC claim
@@ -95,12 +99,7 @@ class AttributeMapper {
 	 * @return string user account id | null for invalid or missing sub
 	 */
 	public function getUserID() {
-		$userid = $this->getClaimValue(Util::CLAIM_UID);
-		if (!preg_match("/^[a-zA-Z0-9_\.@-]*$/", $userid, $match)) {
-			$this->logger->warning('Invalid or missing OIDC sub:' . $userid, $this->logCtx);
-			return null;
-		}
-		return $userid;
+		return $this->getClaimValue(Util::CLAIM_UID);
 	}
 	/**
 	 * Obtain display name from OIDC claim
@@ -108,12 +107,7 @@ class AttributeMapper {
 	 * @return string display name | null for invalid or missing dn claim
 	 */
 	public function getDisplayName() {
-		$dn = $this->getClaimValue(Util::CLAIM_DN);
-		if (!preg_match("/^[^<>$#!%&\*\\_\+\.@-]*$/", $dn, $match)) {
-			$this->logger->warning('Invalid or missing OIDC DN:' . $dn, $this->logCtx);
-			return null;
-		}
-		return $dn;
+		return $this->getClaimValue(Util::CLAIM_DN);
 	}
 	/**
 	 * Obtain e-mail from OIDC claim
@@ -121,13 +115,7 @@ class AttributeMapper {
 	 * @return string e-mail address | null for invalid or missing address
 	 */
 	public function getEMailAddress() {
-		$email = $this->getClaimValue(Util::CLAIM_EMAIL);
-		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-			return $email;
-		} else {
-			$this->logger->warning('Invalid or missing OIDC e-mail:' . $email, $this->logCtx);
-			return null;
-		}
+		return $this->getClaimValue(Util::CLAIM_EMAIL);
 	}
 	/**
 	 * Returns attribute names that must have corresponding OIDC claims set
@@ -148,5 +136,31 @@ class AttributeMapper {
 		}
 		return $required;
 
+	}
+	/**
+	 * Checks if a claim value matches the expected format
+	 *
+	 * @param string $name claim name
+	 * @param string $value claim value
+	 *
+	 * @return bool
+	 */
+	protected function validate($name, $value) {
+		$valid = false;
+		switch ($name) {
+			case Util::CLAIM_UID:
+				$valid = preg_match("/^[a-zA-Z0-9_\.@-]*$/", $value, $match);
+				break;
+			case Util::CLAIM_DN:
+				$valid = preg_match("/^[^<>$#!%&\*\\_\+\.@-]*$/", $value, $match);
+				break;
+			case Util::CLAIM_EMAIL:
+				$valid = filter_var($value, FILTER_VALIDATE_EMAIL);
+				break;
+			default:
+				$this->logger->warning('Unknown OIDC claim:' . $name, $this->logCtx);
+				break;
+		}
+		return $valid;
 	}
 }
