@@ -201,4 +201,21 @@ class UserBackendTest extends TestCase {
 		$this->constructUserBackend();
 		$this->assertTrue($this->userBackend->checkClaims());
 	}
+	/**
+	 * @return null
+	 */
+	public function testCheckPasswordFailsWhenRequirementsNotSatisfied() {
+		$this->attrMapper->expects($this->once())
+			->method('getRequiredClaims')
+			->willReturn(array('claim_userid', 'claim_email'));
+		$claimMap = [
+			['claim_userid', 'user0@domain.com'],
+			['claim_email', null]
+		];
+		$this->attrMapper->expects($this->atLeastOnce())
+			->method('getClaimValue')
+			->will($this->returnValueMap($claimMap));
+		$this->constructUserBackend();
+		$this->assertFalse($this->userBackend->checkPassword());
+	}
 }
