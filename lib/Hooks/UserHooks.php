@@ -111,6 +111,7 @@ class UserHooks {
 	 * @return null
 	 */
 	public function logoutHook() {
+		$this->logger->info('Invalidating OIDC session', $this->logCtx);
 		Util::unsetOIDCSessionCookie($this->request);
 	}
 }

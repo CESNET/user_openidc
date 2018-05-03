@@ -83,6 +83,7 @@ class AdminPanel implements ISettings {
 		$claimUserid = $this->attrMapper->getClaimName(Util::CLAIM_UID);
 		$claimDn = $this->attrMapper->getClaimName(Util::CLAIM_DN);
 		$claimEmail = $this->attrMapper->getClaimName(Util::CLAIM_EMAIL);
+		$claimAltUids = $this->attrMapper->getClaimName(Util::CLAIM_ALTUIDS);
 		$requiredClaims = $this->attrMapper->getRequiredClaims();
 
 		$t = new Template('user_openidc', 'settings-admin');
@@ -92,6 +93,7 @@ class AdminPanel implements ISettings {
 		$t->assign('mapping_userid', $claimUserid);
 		$t->assign('mapping_dn', $claimDn);
 		$t->assign('mapping_email', $claimEmail);
+		$t->assign('mapping_altuids', $claimAltUids);
 		$t->assign('oidc_claims', $oidcClaims);
 		$t->assign('required_claims', $requiredClaims);
 		return $t;
