@@ -68,6 +68,7 @@ OIDC mapping to ownCloud and user backend settings could be configured from here
 
 * **Claim prefix** - prefix for all claims provided by mod_auth_openidc (see _OIDCClaimPrefix_ setting).
 * **Username** - claim to be used as ownCloud Account ID (username).
+* **Alternative usernames** - a comma separated list of known alternative usernames of the user.
 * **Full Name** - claim to be used for User display name.
 * **Email** - claim to be used as Account contact e-mail address.
 * **Required (checkbox)** - when checked, users must provide this claim in order to be logged in successfully.

@@ -51,6 +51,7 @@ class AttributeMapperTest extends TestCase {
 			['user_openidc', 'claim_userid', null, 'sub'],
 			['user_openidc', 'claim_displayname', null, 'name'],
 			['user_openidc', 'claim_email', null, 'email'],
+			['user_openidc', 'claim_altuids', null, 'altuids'],
 			['user_openidc', 'claim_groups', null, 'USERINFO_groups'],
 			['user_openidc', 'backend_required_claims', 'claim_userid', 'claim_userid']
 		];
@@ -66,6 +67,7 @@ class AttributeMapperTest extends TestCase {
 			['USERINFO_sub', 'claim_userid'],
 			['USERINFO_name', 'claim_displayname'],
 			['USERINFO_email', 'claim_email'],
+			['USERINFO_altuids', 'claim_altuids'],
 			'already prefixed claim' => ['USERINFO_groups', 'claim_groups'],
 			'nonexistent attribute' => [null, 'bob']
 		];
@@ -98,6 +100,26 @@ class AttributeMapperTest extends TestCase {
 			'e-mail missing' => [null, []],
 			'valid e-mail' => ['user0@mail.com', ['USERINFO_email' => 'user0@mail.com']],
 			'invalid e-mail' => [null, ['USERINFO_email' => ' ;<>_bob$;@evil.corp']]
+		];
+	}
+	/**
+	 * @return array
+	 */
+	public function providesOidcAltUidsClaims() {
+		return [
+			'empty altuids' => [null, ['USERINFO_altuids' => '']],
+			'single valid altuid' => [
+				['altuser@domain.com'],
+				['USERINFO_altuids' => 'altuser@domain.com']
+			],
+			'multiple valid altuids' => [
+				['altuser0@domain.com', 'altuser1@domain.com'],
+				['USERINFO_altuids' => 'altuser0@domain.com,altuser1@domain.com']
+			],
+			'invalid altuid' => [
+				null,
+				['USERINFO_altuids' => ' ;<>bob$;@evil.corp,altuser0@domain.com']
+			]
 		];
 	}
 	/**
@@ -150,7 +172,6 @@ class AttributeMapperTest extends TestCase {
 		$actual = $this->attrMapper->getClaimValue('foo');
 		$this->assertNull($actual);
 	}
-
 	/**
 	 * @dataProvider providesOidcSubClaims
 	 * @param mixed $expected expected result
@@ -163,7 +184,18 @@ class AttributeMapperTest extends TestCase {
 		$actual = $this->attrMapper->getUserID();
 		$this->assertSame($expected, $actual);
 	}
-
+	/**
+	 * @dataProvider providesOidcAltUidsClaims
+	 * @param mixed $expected expected result
+	 * @param array $oidcClaims Claims array to be set in $_SERVER env
+	 *
+	 * @return null
+	 */
+	public function testGetAltUserIDs($expected, $oidcClaims) {
+		$this->request->server = $oidcClaims;
+		$actual = $this->attrMapper->getAltUserIDs();
+		$this->assertSame($expected, $actual);
+	}
 	/**
 	 * @dataProvider providesOidcDNClaims
 	 * @param mixed $expected expected result
@@ -176,7 +208,6 @@ class AttributeMapperTest extends TestCase {
 		$actual = $this->attrMapper->getDisplayName();
 		$this->assertSame($expected, $actual);
 	}
-
 	/**
 	 * @dataProvider providesOidcEmailClaims
 	 * @param mixed $expected expected result
@@ -189,7 +220,6 @@ class AttributeMapperTest extends TestCase {
 		$actual = $this->attrMapper->getEMailAddress();
 		$this->assertSame($expected, $actual);
 	}
-
 	/**
 	 * @dataProvider providesOidcRequiredClaims
 	 * @param mixed $expected expected result
