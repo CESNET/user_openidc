@@ -19,7 +19,9 @@ use \OCP\IUserManager;
 use \OCP\Security\ISecureRandom;
 use \OCP\IUserBackend;
 use \OCA\UserOpenIDC\Util;
+use \OCA\UserOpenIDC\Db\IdentityMapper;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
 
 /**
  * OpenID Connect User Backend class
@@ -41,6 +43,10 @@ class UserBackend extends Backend implements IUserBackend {
 	private $logCtx;
 	/** @var AttributeMapper */
 	private $attrMapper;
+	/** @var IdentityMapper */
+	private $idMapper;
+	/** @var LegacyIdentityMapper */
+	private $legacyIdMapper;
 
 	/**
 	 * UserBackend constructor
@@ -51,9 +57,13 @@ class UserBackend extends Backend implements IUserBackend {
 	 * @param ISecureRandom $secRandom
 	 * @param ILogger $logger
 	 * @param AttributeMapper $attrMapper
+	 * @param IdentityMapper $idMapper
+	 * @param LegacyIdentityMapper $legacyIdMapper
 	 */
 	function __construct($appName, AppConfig $appConfig, IUserManager $userMgr,
-		ISecureRandom $secRandom, ILogger $logger, AttributeMapper $attrMapper
+		ISecureRandom $secRandom, ILogger $logger,
+		AttributeMapper $attrMapper, IdentityMapper $idMapper,
+		LegacyIdentityMapper $legacyIdMapper
 	) {
 		$this->appName = $appName;
 		$this->config = $appConfig;
@@ -62,6 +72,8 @@ class UserBackend extends Backend implements IUserBackend {
 		$this->logger = $logger;
 		$this->logCtx = array('app' => $this->appName);
 		$this->attrMapper = $attrMapper;
+		$this->idMapper = $idMapper;
+		$this->legacyIdMapper = $legacyIdMapper;
 	}
 	/**
 	 * Backend name to be shown in user management
@@ -96,6 +108,7 @@ class UserBackend extends Backend implements IUserBackend {
 			return false;
 		}
 
+		$userid = $this->resolveUserID($userid, $this->attrMapper->getAltUserIDs());
 		if (!$this->userMgr->userExists($userid)) {
 			if ($mode === 'provisioning') {
 				$this->logger->info(
@@ -115,7 +128,6 @@ class UserBackend extends Backend implements IUserBackend {
 		}
 		return $userid;
 	}
-
 	/**
 	 * Checks if all required OIDC claims are present and valid
 	 *
@@ -133,5 +145,43 @@ class UserBackend extends Backend implements IUserBackend {
 			}
 		}
 		return true;
+
 	}
+	/**
+	 * Figures out the effective OC User ID for the given OIDC User ID
+	 *
+	 * @param string $oidcUserID OIDC User ID
+	 * @param array $altUserIDs list of alternative User IDs
+	 *
+	 * @return string|null effective OC user account ID
+	 */
+	 public function resolveUserID($oidcUserID, $altUserIDs) {
+		$userid = $this->idMapper->getOcUserID($oidcUserID);
+		if (!$userid) {
+			$uids = array();
+			foreach ((array)$altUserIDs as $altUid) {
+				$uids[] = $this->legacyIdMapper->getOcUid($altUid);
+			}
+			$uids = array_filter(array_unique($uids));
+			if (count($uids) > 1) {
+				//TODO: This should raise some fatal exception
+				// this situation must be handled by admins manually
+			} else {
+				$userid = array_pop($uids);
+				if (!$userid) {
+					// If the user doesn't have any ID
+					// mapping, use his current User ID
+					$userid = $oidcUserID;
+				}
+				$this->idMapper->addIdentity(
+					$oidcUserID, $userid, '', 0
+				);
+			}
+		}
+		$this->logger->info(
+			'OIDC UID: '. $oidcUserID . ' translated to: '. $userid,
+			$this->logCtx
+		);
+		return $userid;
+	 }
 }

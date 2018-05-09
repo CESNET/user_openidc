@@ -20,6 +20,8 @@ use \OCP\Security\ISecureRandom;
 use \Test\TestCase;
 use \OCA\UserOpenIDC\UserBackend;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCA\UserOpenIDC\Db\IdentityMapper;
+use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
 
 /**
  * Class UserBackendTest
@@ -40,6 +42,10 @@ class UserBackendTest extends TestCase {
 	private $attrMapper;
 	/** @var UserBackend | \PHPUnit_Framework_MockObject_MockObject */
 	private $userBackend;
+	/** @var IdentityMapper | \PHPUnit_Framework_MockObject_MockObject */
+	private $idMapper;
+	/** @var LegacyIdentityMapper | \PHPUnit_Framework_MockObject_MockObject */
+	private $legacyIdMapper;
 
 	/**
 	 * @return null
@@ -66,6 +72,12 @@ class UserBackendTest extends TestCase {
 	 * @return null
 	 */
 	private function constructUserBackend($mode='logon_only') {
+		if (!$this->idMapper) {
+			$this->idMapper = $this->createMock(IdentityMapper::class);
+		}
+		if (!$this->legacyIdMapper) {
+			$this->legacyIdMapper = $this->createMock(LegacyIdentityMapper::class);
+		}
 		$this->appConfig->method('getValue')
 			->with('user_openidc', 'backend_mode')
 			->willReturn($mode);
@@ -75,8 +87,69 @@ class UserBackendTest extends TestCase {
 			$this->userMgr,
 			$this->secRandom,
 			$this->logger,
-			$this->attrMapper
+			$this->attrMapper,
+			$this->idMapper,
+			$this->legacyIdMapper
 		);
+	}
+	/**
+	 * @return null
+	 */
+	public function mockUserWithIdMapping() {
+		$this->idMapper = $this->createMock(IdentityMapper::class);
+
+		$this->idMapper->expects($this->any())
+			->method('getOcUserID')
+			->with('user0@domain.com')
+			->willReturn('user0@domain.com');
+	}
+	/**
+	 * @return null
+	 */
+	public function mockUserWithoutIdMapping() {
+		$this->idMapper = $this->createMock(IdentityMapper::class);
+		$this->idMapper->expects($this->any())
+			->method('getOcUserID')
+			->with('user0@domain.com')
+			->willReturn(false);
+	}
+	/**
+	 * @return null
+	 */
+	public function mockUserWithoutLegacyIdMapping() {
+		$this->legacyIdMapper = $this->createMock(LegacyIdentityMapper::class);
+		$this->legacyIdMapper->expects($this->any())
+			->method('getOcUid')
+			->with('user0@domain.com')
+			->willReturn(false);
+	}
+	/**
+	 * @return null
+	 */
+	public function mockUserWithConvergentLegacyIdMappings() {
+		$this->legacyIdMapper = $this->createMock(LegacyIdentityMapper::class);
+		$this->legacyIdMapper->expects($this->any())
+			->method('getOcUid')
+			->will($this->returnValueMap(
+				[
+					['user0@domain.com', 'user1@domain.com'],
+					['user1@domain.com', 'user1@domain.com'],
+				]
+			));
+	}
+	/**
+	 * @return null
+	 */
+	public function mockUserWithNonConvergentLegacyIdMappings() {
+		$this->legacyIdMapper = $this->createMock(LegacyIdentityMapper::class);
+		$this->legacyIdMapper->expects($this->any())
+			->method('getOcUid')
+			->will($this->returnValueMap(
+				[
+					['user0@domain.com', 'user0@domain.com'],
+					['user1@domain.com', 'user1@domain.com'],
+				]
+			));
 	}
 	/**
 	 * @return null
@@ -217,5 +290,62 @@ class UserBackendTest extends TestCase {
 			->will($this->returnValueMap($claimMap));
 		$this->constructUserBackend();
 		$this->assertFalse($this->userBackend->checkPassword());
+	}
+	/**
+	 * @return null
+	 */
+	public function testResolveUserIDReturnsOCUidOfExistingIdentity() {
+		$this->mockUserWithIdMapping();
+		$this->constructUserBackend();
+		$expected = 'user0@domain.com';
+		$actual = $this->userBackend->resolveUserID($expected, [$expected]);
+		$this->assertSame($expected, $actual);
+	}
+	/**
+	 * @return null
+	 */
+	public function testResolveUserIDReturnsOCUidOfExistingLegacyIdentity() {
+		$this->mockUserWithoutIdMapping();
+		$this->mockUserWithConvergentLegacyIdMappings();
+		$this->constructUserBackend();
+		$expected = 'user1@domain.com';
+		$actual = $this->userBackend->resolveUserID(
+			'user0@domain.com', ['user0@domain.com', $expected]);
+		$this->assertSame($expected, $actual);
+	}
+	/**
+	 * @return null
+	 */
+	public function testResolveUserIDCreatesMissingIdMapping() {
+		$this->mockUserWithoutIdMapping();
+		$this->mockUserWithoutLegacyIdMapping();
+		$this->constructUserBackend();
+		$this->idMapper->expects($this->once())
+			->method('addIdentity')
+			->with(
+				'user0@domain.com', 'user0@domain.com', '', 0
+			);
+		$this->userBackend->resolveUserID(
+			'user0@domain.com', ['user0@domain.com', 'user1@domain.com']
+		);
+	}
+	/**
+	 * @return null
+	 */
+	public function testResolveUserIDCreatesMissingIdMappingAndMarksLegacyMappingMigrated() {
+		$this->mockUserWithoutIdMapping();
+		$this->mockUserWithConvergentLegacyIdMappings();
+		$this->constructUserBackend();
+		$this->idMapper->expects($this->once())
+			->method('addIdentity')
+			->with(
+				'user0@domain.com', 'user1@domain.com', '', 0
+			);
+		$this->legacyIdMapper->expects($this->once())
+			->method('setMigrated')
+			->with('user1@domain.com');
+		$this->userBackend->resolveUserID(
+			'user0@domain.com', ['user0@domain.com', 'user1@domain.com']
+		);
 	}
 }
