@@ -58,13 +58,15 @@ OIDC mapping to ownCloud and user backend settings could be configured from here
 ## User Backend configuration
 
 * **Backend mode** - operational mode. The following options are possible:
-        * Inactive - completely disables authentication through this backend
-        * Logon only - only existing ownCloud accounts that are enabled for OIDC backend can log in.
-                       You can enable login by running the following CLI command:
-                       ``` php occ user_openidc:enablelogin [-u <account_uid>|--all]
-                       ```
+   * **Inactive** - completely disables authentication through this backend
+	
+   * **Logon only** - only existing ownCloud accounts that are enabled for OIDC backend can log in.
+                       You can enable login by running the CLI command:
+                       ``` 
+		       php occ user_openidc:enablelogin [-u <account_uid>|--all]
+                       ```.
                        This assumes that user provisioning is done by another method (e.g. manual, LDAP, AD,...).
-        * Provisioning - this mode autoprovisions new user accounts from provided OIDC claims on logon when necessary.
+   * **Provisioning** - this mode autoprovisions new user accounts from provided OIDC claims on logon when necessary.
 * **Update user information on login** - if enabled, an user account will be updated with provided information (such as e-mail address, display name,...) when the user logs in using this app.
 
 ## Mapping configuration
