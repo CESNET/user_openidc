@@ -14,6 +14,7 @@ namespace OCA\UserOpenIDC;
 
 use \OC\AppConfig;
 use \OC\User\Backend;
+use \OC\User\AccountMapper;
 use \OCP\ILogger;
 use \OCP\IUserManager;
 use \OCP\Security\ISecureRandom;
@@ -22,6 +23,7 @@ use \OCA\UserOpenIDC\Util;
 use \OCA\UserOpenIDC\Db\IdentityMapper;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
+
 
 /**
  * OpenID Connect User Backend class
@@ -43,6 +45,8 @@ class UserBackend extends Backend implements IUserBackend {
 	private $logCtx;
 	/** @var AttributeMapper */
 	private $attrMapper;
+	/** @var AccountMapper */
+	private $accMapper;
 	/** @var IdentityMapper */
 	private $idMapper;
 	/** @var LegacyIdentityMapper */
@@ -57,13 +61,14 @@ class UserBackend extends Backend implements IUserBackend {
 	 * @param ISecureRandom $secRandom
 	 * @param ILogger $logger
 	 * @param AttributeMapper $attrMapper
+	 * @param AccountMapper $accMapper
 	 * @param IdentityMapper $idMapper
 	 * @param LegacyIdentityMapper $legacyIdMapper
 	 */
 	function __construct($appName, AppConfig $appConfig, IUserManager $userMgr,
 		ISecureRandom $secRandom, ILogger $logger,
-		AttributeMapper $attrMapper, IdentityMapper $idMapper,
-		LegacyIdentityMapper $legacyIdMapper
+		AttributeMapper $attrMapper, AccountMapper $accMapper,
+		IdentityMapper $idMapper, LegacyIdentityMapper $legacyIdMapper
 	) {
 		$this->appName = $appName;
 		$this->config = $appConfig;
@@ -72,6 +77,7 @@ class UserBackend extends Backend implements IUserBackend {
 		$this->logger = $logger;
 		$this->logCtx = array('app' => $this->appName);
 		$this->attrMapper = $attrMapper;
+		$this->accMapper = $accMapper;
 		$this->idMapper = $idMapper;
 		$this->legacyIdMapper = $legacyIdMapper;
 	}
@@ -122,6 +128,20 @@ class UserBackend extends Backend implements IUserBackend {
 						. ISecureRandom::CHAR_UPPER
 					)
 				);
+				try {
+					$account = $this->accMapper->getByUid($userid);
+					$backend_class = \get_class($this);
+					$this->logger->debug(
+						'Updating Account backend to: '
+						. $backend_class, $this->logCtx
+					);
+					$account->setBackend($backend_class);
+					$this->accMapper->update($account);
+				} catch (Exception $e) {
+					$this->logger->error(
+						'Account update failed', $this->logCtx
+					);
+				}
 			} else {
 				return false;
 			}
@@ -169,8 +189,6 @@ class UserBackend extends Backend implements IUserBackend {
 			} else {
 				$userid = array_pop($uids);
 				if (!$userid) {
-					// If the user doesn't have any ID
-					// mapping, use his current User ID
 					$userid = $oidcUserID;
 				}
 				$this->idMapper->addIdentity(
@@ -179,7 +197,7 @@ class UserBackend extends Backend implements IUserBackend {
 			}
 		}
 		$this->logger->info(
-			'OIDC UID: '. $oidcUserID . ' translated to: '. $userid,
+			'OIDC UID: '. $oidcUserID . ' resolved to: '. $userid,
 			$this->logCtx
 		);
 		return $userid;

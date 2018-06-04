@@ -14,6 +14,8 @@ namespace OCA\UserOpenIDC\Tests\Unit;
 
 use \OC\AppConfig;
 use \OC\User\Backend;
+use \OC\User\Account;
+use \OC\User\AccountMapper;
 use \OCP\ILogger;
 use \OCP\IUserManager;
 use \OCP\Security\ISecureRandom;
@@ -40,10 +42,13 @@ class UserBackendTest extends TestCase {
 	private $logger;
 	/** @var AttributeMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $attrMapper;
+	/** @var AccountMapper | \PHPUnit_Framework_MockObject_MockObject */
+	private $accMapper;
 	/** @var UserBackend | \PHPUnit_Framework_MockObject_MockObject */
 	private $userBackend;
 	/** @var IdentityMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $idMapper;
+
 	/** @var LegacyIdentityMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $legacyIdMapper;
 
@@ -58,6 +63,8 @@ class UserBackendTest extends TestCase {
 		$this->secRandom = $this->createMock(ISecureRandom::class);
 		$this->logger = $this->createMock(ILogger::class);
 		$this->attrMapper = $this->createMock(AttributeMapper::class);
+
+		$this->accMapper = $this->createMock(AccountMapper::class);
 		$this->secRandom->method('generate')
 			->with(
 				'30', ISecureRandom::CHAR_DIGITS
@@ -88,6 +95,7 @@ class UserBackendTest extends TestCase {
 			$this->secRandom,
 			$this->logger,
 			$this->attrMapper,
+			$this->accMapper,
 			$this->idMapper,
 			$this->legacyIdMapper
 		);
@@ -165,8 +173,7 @@ class UserBackendTest extends TestCase {
 	 */
 	public function testSupportsRequiredActionsOnly() {
 		$this->constructUserBackend();
-		$actions = Backend::CHECK_PASSWORD;
-		$this->assertTrue($this->userBackend->implementsActions($actions));
+		$this->assertTrue($this->userBackend->implementsActions(Backend::CHECK_PASSWORD));
 	}
 	/**
 	 * @return null
@@ -190,6 +197,15 @@ class UserBackendTest extends TestCase {
 		$this->attrMapper->expects($this->once())
 			->method('getUserID')
 			->willReturn($uid);
+		$acc = $this->createMock(Account::class);
+		$this->accMapper->expects($this->once())
+			->method('getByUid')
+			->willReturn($acc);
+		$acc->setBackend(UserBackend::class);
+		$this->accMapper->expects($this->once())
+			->method('update')
+			->with($acc);
+
 		$this->assertFalse($this->userMgr->userExists($uid));
 		$this->constructUserBackend('provisioning');
 

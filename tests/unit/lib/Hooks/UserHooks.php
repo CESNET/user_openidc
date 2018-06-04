@@ -12,11 +12,16 @@
 
 namespace OCA\UserOpenIDC\Tests\Unit\Hooks;
 
+use \OC\User\Backend;
+use \OC\User\Account;
+use \OC\User\SyncService;
+use \OC\User\AccountMapper;
 use \OCP\IUser;
 use \OCP\ILogger;
 use \OCP\IRequest;
 use \OCP\IAppConfig;
 use \OCP\IUserManager;
+use \OCP\UserInterface;
 use \Test\TestCase;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Hooks\UserHooks;
@@ -37,8 +42,14 @@ class UserHooksTest extends TestCase {
 	private $request;
 	/** @var AttributeMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $attrMapper;
+	/** @var AccountMapper | \PHPUnit_Framework_MockObject_MockObject */
+	private $accountMapper;
+	/** @var UserInterface | \PHPUnit_Framework_MockObject_MockObject */
+	private $userBackend;
 	/** @var IUserManager | \PHPUnit_Framework_MockObject_MockObject */
 	private $userManager;
+	/** @var SyncService | \PHPUnit_Framework_MockObject_MockObject */
+	private $syncService;
 	/** @var IUser | \PHPUnit_Framework_MockObject_MockObject */
 	private $user;
 	/** @var UserHooks | \PHPUnit_Framework_MockObject_MockObject */
@@ -57,8 +68,24 @@ class UserHooksTest extends TestCase {
 			->method('getServerProtocol')
 			->willReturn('https');
 		$this->attrMapper = $this->createMock(AttributeMapper::class);
+		$this->accMapper = $this->createMock(AccountMapper::class);
 		$this->userManager = $this->createMock(IUserManager::class);
+		$this->userBackend = $this->createMock(UserInterface::class);
+		$this->userBackend->expects($this->any())
+			->method('implementsActions')
+			->with(Backend::SET_DISPLAYNAME)
+			->willReturn(true);
+		$this->syncService = $this->createMock(SyncService::class);
 		$this->user = $this->createMock(IUser::class);
+		$account = $this->createMock(Account::class);
+		$syncedAccount = $this->createMock(Account::class);
+		$this->accMapper->expects($this->any())
+			->method('getByUid')
+			->willReturn($account);
+		$this->syncService->expects($this->any())
+			->method('syncAccount')
+			->with($account, $this->userBackend)
+			->willReturn($syncedAccount);
 		$this->user->expects($this->any())
 			->method('getDisplayName')
 			->willReturn('John Doe');
@@ -81,7 +108,10 @@ class UserHooksTest extends TestCase {
 			$this->config,
 			$this->request,
 			$this->attrMapper,
+			$this->accMapper,
 			$this->userManager,
+			$this->userBackend,
+			$this->syncService,
 			$this->logger
 		);
 	}
@@ -93,9 +123,8 @@ class UserHooksTest extends TestCase {
 		$this->attrMapper->expects($this->once())
 			->method('getDisplayName')
 			->willReturn('Joe Doe');
-		$this->user->expects($this->once())
-			->method('setDisplayName')
-			->with($expected);
+		$this->userBackend->expects($this->once())
+			->method('setDisplayName');
 		$this->constructUserHooks();
 		$this->userHooks->postLoginHook($this->user);
 	}
