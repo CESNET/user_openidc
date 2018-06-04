@@ -48,7 +48,6 @@ class UserBackendTest extends TestCase {
 	private $userBackend;
 	/** @var IdentityMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $idMapper;
-
 	/** @var LegacyIdentityMapper | \PHPUnit_Framework_MockObject_MockObject */
 	private $legacyIdMapper;
 
@@ -63,7 +62,6 @@ class UserBackendTest extends TestCase {
 		$this->secRandom = $this->createMock(ISecureRandom::class);
 		$this->logger = $this->createMock(ILogger::class);
 		$this->attrMapper = $this->createMock(AttributeMapper::class);
-
 		$this->accMapper = $this->createMock(AccountMapper::class);
 		$this->secRandom->method('generate')
 			->with(

@@ -24,7 +24,6 @@ use \OCA\UserOpenIDC\Db\IdentityMapper;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
 
-
 /**
  * OpenID Connect User Backend class
  *
@@ -189,6 +188,8 @@ class UserBackend extends Backend implements IUserBackend {
 			} else {
 				$userid = array_pop($uids);
 				if (!$userid) {
+					// If the user doesn't have any ID
+					// mapping, use his current User ID
 					$userid = $oidcUserID;
 				}
 				$this->idMapper->addIdentity(
