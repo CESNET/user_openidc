@@ -66,6 +66,8 @@ OIDC mapping to ownCloud and user backend settings could be configured from here
 		       php occ user_openidc:enablelogin [-u <account_uid>|--all]
                        ```.
                        This assumes that user provisioning is done by another method (e.g. manual, LDAP, AD,...).
+		       _Please be warned that currently any changes to the account (e-mail, displayname,...) will
+		       further be possible using this app only (see issue #2)_.
    * **Provisioning** - this mode autoprovisions new user accounts from provided OIDC claims on logon when necessary.
 * **Update user information on login** - if enabled, an user account will be updated with provided information (such as e-mail address, display name,...) when the user logs in using this app.
 
