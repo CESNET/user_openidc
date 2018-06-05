@@ -98,6 +98,34 @@ style('user_openidc', 'settings-admin');
 				</td>
 			</tr><tr>
 				<td>
+				<label for="user-openidc-altuids">
+					<?php p($l->t('Alternative usernames')); ?>
+				</label>
+				</td><td>
+				<select name="claim_altuids" id="user-openidc-altuids"
+					class="user-openidc-setting">
+					<?php foreach ($_['oidc_claims'] as $svar => $svalue): ?>
+						<option value="<?php p($svar); ?>"
+						<?php if ($svar === $_['mapping_altuids']): ?>
+							selected='selected'
+						<?php endif; ?>>
+						<?php p($svar . ' (' . $svalue . ')'); ?>
+						</option>
+					<?php endforeach;?>
+				</select>
+				<input type="checkbox" class="checkbox user-openidc-required"
+					name="claim_altuids"
+					id="user-openidc-altuids_required" value="0"
+			<?php if (in_array('claim_altuids', $_['required_claims'])) {
+					print_unescaped('checked="checked"');
+			} ?> >
+				</input>
+				<label for="user-openidc-altuids_required">
+					<em><?php p($l->t('Required')); ?></em>
+				</label>
+				</td>
+			</tr><tr>
+				<td>
 				<label for="user-openidc-dn">
 					<?php p($l->t('Full name')); ?>
 				</label>
@@ -138,14 +166,14 @@ style('user_openidc', 'settings-admin');
 						selected='selected'
 					<?php endif; ?>>
 					<?php p($svar . ' (' . $svalue . ')'); ?>
-						</option>
+					</option>
 				<?php endforeach;?>
 				</select>
 				<input type="checkbox" class="checkbox user-openidc-required"
 					name="claim_email"
 					id="user-openidc-email_required" value="0"
 <?php if (in_array('claim_email', $_['required_claims'])) {
-						print_unescaped('checked="checked"');
+					print_unescaped('checked="checked"');
 } ?> >
 				</input>
 				<label for="user-openidc-email_required">

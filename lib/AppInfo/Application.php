@@ -12,12 +12,16 @@
 
 namespace OCA\UserOpenIDC\AppInfo;
 
+use OC\User\Database;
+use OC\User\SyncService;
 use OCP\AppFramework\App;
 use OCA\UserOpenIDC\UserBackend;
 use OCA\UserOpenIDC\GroupBackend;
 use OCA\UserOpenIDC\Hooks\UserHooks;
+use OCA\UserOpenIDC\Db\IdentityMapper;
 use OCA\UserOpenIDC\Controller\LoginController;
 use OCA\UserOpenIDC\Attributes\AttributeMapper;
+use OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
 
 /**
  * Main Application container class
@@ -56,7 +60,10 @@ class Application extends App {
 					$c->query('UserManager'),
 					$c->query('SecureRandom'),
 					$c->query('Logger'),
-					$c->query('AttributeMapper')
+					$c->query('AttributeMapper'),
+					$c->query('AccountMapper'),
+					$c->query('IdentityMapper'),
+					$c->query('LegacyIdentityMapper')
 				);
 			}
 		);
@@ -67,7 +74,10 @@ class Application extends App {
 					$c->query('AppConfig'),
 					$c->query('Request'),
 					$c->query('AttributeMapper'),
+					$c->query('AccountMapper'),
 					$c->query('UserManager'),
+					$c->query('DatabaseBackend'),
+					$c->query('SyncService'),
 					$c->query('Logger')
 				);
 			}
@@ -87,9 +97,34 @@ class Application extends App {
 				);
 			}
 		);
+		$container->registerService(
+			'IdentityMapper', function($c) {
+				return new IdentityMapper(
+					$c->query('AppName'),
+					$c->query('Logger'),
+					$c->query('Db'),
+					$c->query('UserManager')
+				);
+			}
+		);
+		$container->registerService(
+			'LegacyIdentityMapper', function($c) {
+				return new LegacyIdentityMapper(
+					$c->query('AppName'),
+					$c->query('Logger'),
+					$c->query('Db'),
+					$c->query('UserManager')
+				);
+			}
+		);
 		/**
 		 * OC Server Services
 		 */
+		$container->registerService(
+			'Db', function($c) {
+				return $c->query('ServerContainer')->getDb();
+			}
+		);
 		$container->registerService(
 			'Logger', function ($c) {
 				return $c->query('ServerContainer')->getLogger();
@@ -128,6 +163,25 @@ class Application extends App {
 		$container->registerService(
 			'UserSession', function ($c) {
 				return $c->query('ServerContainer')->getUserSession();
+			}
+		);
+		$container->registerService(
+			'AccountMapper', function ($c) {
+				return $c->query('ServerContainer')->getAccountMapper();
+			}
+		);
+		$container->registerService(
+			'SyncService', function ($c) {
+				return new SyncService(
+					$c->query('Config'),
+					$c->query('Logger'),
+					$c->query('AccountMapper')
+				);
+			}
+		);
+		$container->registerService(
+			'DatabaseBackend', function ($c) {
+				return new Database();
 			}
 		);
 	}
