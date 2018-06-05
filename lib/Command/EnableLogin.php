@@ -67,17 +67,20 @@ class EnableLogin extends Command {
 			);
 		} else {
 			$uid = $input->getOption('userid');
-			$output->writeln('Enabling OIDC login for user UID: '. $uid);
-			try {
-				$acc = $this->accMapper->getByUid($uid);
-			} catch (Exception $e) {
-				$output->writeln("<error>User Account with this uid doesn't exist.</error>");
-				return;
+			if ($uid) {
+				$output->writeln('Enabling OIDC login for user UID: '. $uid);
+				try {
+					$acc = $this->accMapper->getByUid($uid);
+				} catch (Exception $e) {
+					$output->writeln("<error>User Account with this uid doesn't exist.</error>");
+					return;
+				}
+				$this->enableAccountOIDCLogin($acc);
+				$output->writeln("<info>Account backend successfully switched to " . UserBackend::class . "</info>");
+			} else {
+				$output->writeln("<error>user_openidc:enablelogin [-u|--userid USERID] [-a|--all]</error>");
 			}
-			$this->enableAccountOIDCLogin($acc);
-			$output->writeln("<info>Account backend successfully switched to " . UserBackend::class . "</info>");
 		}
-		$output->writeln('All Done.');
 	}
 
 }
