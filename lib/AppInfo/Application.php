@@ -12,16 +12,16 @@
 
 namespace OCA\UserOpenIDC\AppInfo;
 
-use OC\User\Database;
-use OC\User\SyncService;
-use OCP\AppFramework\App;
-use OCA\UserOpenIDC\UserBackend;
-use OCA\UserOpenIDC\GroupBackend;
-use OCA\UserOpenIDC\Hooks\UserHooks;
-use OCA\UserOpenIDC\Db\IdentityMapper;
-use OCA\UserOpenIDC\Controller\LoginController;
-use OCA\UserOpenIDC\Attributes\AttributeMapper;
-use OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
+use \OC\User\Database;
+use \OC\User\SyncService;
+use \OCP\AppFramework\App;
+use \OCA\UserOpenIDC\UserBackend;
+use \OCA\UserOpenIDC\GroupBackend;
+use \OCA\UserOpenIDC\Hooks\UserHooks;
+use \OCA\UserOpenIDC\Db\IdentityMapper;
+use \OCA\UserOpenIDC\Controller\LoginController;
+use \OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
 
 /**
  * Main Application container class
@@ -78,7 +78,12 @@ class Application extends App {
 					$c->query('UserManager'),
 					$c->query('DatabaseBackend'),
 					$c->query('SyncService'),
-					$c->query('Logger')
+					$c->query('URLGenerator'),
+					$c->query('Logger'),
+					$c->query('Mailer'),
+					$c->query('Defaults'),
+					$c->query('L10N'),
+					\OCP\Util::getDefaultEmailAddress('no-reply')
 				);
 			}
 		);
@@ -168,6 +173,21 @@ class Application extends App {
 		$container->registerService(
 			'AccountMapper', function ($c) {
 				return $c->query('ServerContainer')->getAccountMapper();
+			}
+		);
+		$container->registerService(
+			'Mailer', function ($c) {
+				return $c->query('ServerContainer')->getMailer();
+			}
+		);
+		$container->registerService(
+			'L10N', function($c) {
+				return $c->query('ServerContainer')->getL10N('settings');
+			}
+		);
+		$container->registerService(
+			'Defaults', function($c) {
+				return new \OC_Defaults();
 			}
 		);
 		$container->registerService(

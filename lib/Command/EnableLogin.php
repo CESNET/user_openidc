@@ -53,8 +53,13 @@ class EnableLogin extends Command {
 	 * @param Account $account User Account
 	 */
 	private function enableAccountOIDCLogin($account) {
-		$account->setBackend(UserBackend::class);
-		$this->accMapper->update($account);
+		if ($account->getUserId() === 'admin') {
+			$account->setBackend('OC\User\Database');
+			$this->accMapper->update($account);
+		} else {
+			$account->setBackend(UserBackend::class);
+			$this->accMapper->update($account);
+		}
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
@@ -67,7 +72,7 @@ class EnableLogin extends Command {
 			);
 		} else {
 			$uid = $input->getOption('userid');
-			if ($uid) {
+			if ($uid && $uid !== 'admin') {
 				$output->writeln('Enabling OIDC login for user UID: '. $uid);
 				try {
 					$acc = $this->accMapper->getByUid($uid);

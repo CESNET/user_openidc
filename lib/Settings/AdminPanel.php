@@ -72,6 +72,7 @@ class AdminPanel implements ISettings {
 	public function getPanel() {
 		$backendMode = $this->config->getValue($this->appName, Util::MODE, 'inactive');
 		$backendAutoupdate = $this->config->getValue($this->appName, Util::AUTOUPDATE, 'no');
+		$backendStripdomain = $this->config->getValue($this->appName, Util::STRIP_USERID_DOMAIN, 'no');
 		$oidcPrefix = $this->attrMapper->getClaimPrefix();
 		$oidcClaims = array_filter(
 			$this->request->server,
@@ -89,6 +90,7 @@ class AdminPanel implements ISettings {
 		$t = new Template('user_openidc', 'settings-admin');
 		$t->assign('backend_mode', $backendMode);
 		$t->assign('backend_autoupdate', $backendAutoupdate);
+		$t->assign('backend_stripdomain', $backendStripdomain);
 		$t->assign('mapping_prefix', $oidcPrefix);
 		$t->assign('mapping_userid', $claimUserid);
 		$t->assign('mapping_dn', $claimDn);
