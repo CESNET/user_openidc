@@ -76,7 +76,7 @@ class UserBackendTest extends TestCase {
 	 *
 	 * @return null
 	 */
-	private function constructUserBackend($mode='logon_only') {
+	private function constructUserBackend($mode='logon_only', $stripdomain='no') {
 		if (!$this->idMapper) {
 			$this->idMapper = $this->createMock(IdentityMapper::class);
 		}
@@ -84,8 +84,10 @@ class UserBackendTest extends TestCase {
 			$this->legacyIdMapper = $this->createMock(LegacyIdentityMapper::class);
 		}
 		$this->appConfig->method('getValue')
-			->with('user_openidc', 'backend_mode')
-			->willReturn($mode);
+			->will($this->returnValueMap([
+				['user_openidc', 'backend_mode', $mode, $mode],
+				['user_openidc', 'backend_stripdomain', $stripdomain, $stripdomain]]
+			));
 		$this->userBackend = new UserBackend(
 			'user_openidc',
 			$this->appConfig,

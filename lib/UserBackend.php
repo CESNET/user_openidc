@@ -175,7 +175,9 @@ class UserBackend extends Backend implements IUserBackend {
 	 * @return string|null effective OC user account ID
 	 */
 	 public function resolveUserID($oidcUserID, $altUserIDs) {
+		$stripdomain = $this->config->getValue($this->appName, Util::STRIP_USERID_DOMAIN, 'no');
 		$userid = $this->idMapper->getOcUserID($oidcUserID);
+
 		if (!$userid) {
 			$uids = array();
 			foreach ((array)$altUserIDs as $altUid) {
@@ -189,8 +191,16 @@ class UserBackend extends Backend implements IUserBackend {
 				$userid = array_pop($uids);
 				if (!$userid) {
 					// If the user doesn't have any ID
-					// mapping, use his current User ID
-					$userid = $oidcUserID;
+					// mapping, use the provided one
+					// as the Account User ID
+					if ($stripdomain) {
+						$userid = substr(
+							$oidcUserID, 0,
+							strpos($oidcUserID, '@')
+						);
+					} else {
+						$userid = $oidcUserID;
+					}
 				}
 				$this->idMapper->addIdentity(
 					$oidcUserID, $userid, '', 0

@@ -188,6 +188,9 @@ style('user_openidc', 'settings-admin');
 
 		<div id="user-openidc-backend">
 			<h3><?php p($l->t('OpenID Connect backend configuration')) ?></h3>
+			<table>
+			<tbody>
+			<tr><td>
 			<input type="checkbox" class="checkbox user-openidc-setting"
 				name="backend_autoupdate" id="user-openidc-autoupdate" value="1"
 				<?php if ($_['backend_autoupdate'] === 'yes')
@@ -196,6 +199,18 @@ style('user_openidc', 'settings-admin');
 			<label for="user-openidc-autoupdate">
 				<?php p($l->t('Update user information on login')); ?>
 			</label>
+			</td></tr><tr><td>
+			<input type="checkbox" class="checkbox user-openidc-setting"
+				name="backend_stripdomain" id="user-openidc-stripdomain" value="1"
+				<?php if ($_['backend_stripdomain'] === 'yes')
+					print_unescaped('checked="checked"'); ?> >
+			</input>
+			<label for="user-openidc-stripdomain">
+				<?php p($l->t('Strip domain part of username')); ?>
+			</label>
+			</td></tr>
+			</tbody>
+			</table>
 		</div>
 	</div>
 </div>

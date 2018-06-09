@@ -27,6 +27,7 @@ class Util {
 	const CLAIM_ALTUIDS = 'claim_altuids';
 	const REQUIRED_CLAIMS = 'backend_required_claims';
 	const AUTOUPDATE = 'backend_autoupdate';
+	const STRIP_USERID_DOMAIN = 'backend_stripdomain';
 	const MODE = 'backend_mode';
 
 	const OIDC_COOKIE_NAME = 'mod_auth_openidc_session';
