@@ -73,7 +73,7 @@ class LoginController extends Controller {
 	 */
 	public function tryLogin($redirectUrl=null) {
 		$this->logger->debug('Initiating OIDC login', $this->logCtx);
-		$loginResult = $this->session->login(null, null);
+		$loginResult = $this->session->login('', null);
 
 		if ($loginResult) {
 			$user = $this->session->getUser();

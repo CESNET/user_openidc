@@ -80,7 +80,8 @@ class LegacyIdentityMapper extends Mapper {
 		$identity = null;
 		if (! $samlUid || $samlUid === '') { return null; }
 
-		$sql = sprintf('SELECT * FROM `%s` WHERE `saml_uid` = ?', $this->getTableName());
+		$sql = sprintf('SELECT * FROM `%s` WHERE `saml_uid` = ? AND migrated = 0',
+		$this->getTableName());
 		try {
 			$identity = $this->findEntity($sql, [$samlUid]);
 		} catch (DoesNotExistException $e) {

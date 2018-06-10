@@ -179,14 +179,32 @@ class UserBackend extends Backend implements IUserBackend {
 		$userid = $this->idMapper->getOcUserID($oidcUserID);
 
 		if (!$userid) {
+			/**
+			 * Search if any of the altUserIDs could not be found
+			 * in the legacy ID mapping table and if yes, we
+			 * migrate the mapping to the new table. If not,
+			 * we will create a mapping of oidcUserID to itself
+			 */
 			$uids = array();
 			foreach ((array)$altUserIDs as $altUid) {
-				$uids[] = $this->legacyIdMapper->getOcUid($altUid);
+				$legacyId = $this->legacyIdMapper->getIdentity($altUid);
+				if ($legacyId) {
+					$uids[] = $legacyId->getOcUid();
+					$legacyId->setMigrated(1);
+					$this->legacyIdMapper->update($legacyId);
+				}
 			}
 			$uids = array_filter(array_unique($uids));
 			if (count($uids) > 1) {
 				//TODO: This should raise some fatal exception
 				// this situation must be handled by admins manually
+				$this->logger->error(
+					'User ' . $oidcUserID
+					. ' has NON-CONVERGENT ID mappings for:'
+					. print_r($altUserIDs, TRUE),
+					$this->logCtx
+				);
+				return null;
 			} else {
 				$userid = array_pop($uids);
 				if (!$userid) {

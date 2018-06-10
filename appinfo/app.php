@@ -18,6 +18,7 @@ $c = $app->getContainer();
 $urlGenerator = $c->query('URLGenerator');
 $appName = $c->query('AppName');
 $request = $c->query('Request');
+$l10n = $c->query('L10N');
 
 // It is not necessary to activate backend
 // for these URLs. The list comes from here:
@@ -65,7 +66,7 @@ if (!\OC::$CLI && !preg_match($excludedRegex, $requestUri)) {
 	);
 	\OC_App::registerLogIn(
 		array(
-			'name' => 'Log In with OpenID',
+			'name' => $l10n->t('Sign In with OpenID'),
 			'href' => $loginRoute
 		)
 	);

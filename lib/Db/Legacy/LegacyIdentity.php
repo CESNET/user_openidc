@@ -20,8 +20,8 @@ use OCP\AppFramework\Db\Entity;
 class LegacyIdentity extends Entity {
 
 	protected $samlUid;
+	protected $ocUid;
 	protected $samlEmail;
 	protected $lastSeen;
-	protected $ocUid;
 	protected $migrated;
 }
