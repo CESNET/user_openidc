@@ -114,7 +114,7 @@ class UserBackend extends Backend implements IUserBackend {
 		}
 
 		$userid = $this->resolveUserID($userid, $this->attrMapper->getAltUserIDs());
-		if (!$this->userMgr->userExists($userid)) {
+		if ($userid && !$this->userMgr->userExists($userid)) {
 			if ($mode === 'provisioning') {
 				$this->logger->info(
 					'Creating new account for: '

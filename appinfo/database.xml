@@ -93,7 +93,7 @@
 				<length>4</length>
 			</field>
 			<index>
-				<name>saml_uid_pk</name>
+				<name>legacy_saml_uid_pk</name>
 				<unique>true</unique>
 				<field>
 					<name>saml_uid</name>
