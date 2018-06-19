@@ -28,6 +28,8 @@ use \OCA\UserOpenIDC\Util;
 use \OCA\UserOpenIDC\UserBackend;
 use \OCP\AppFramework\Http\TemplateResponse;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
+use \OCA\UserOpenIDC\Db\IdentityMapper;
+
 
 /**
  * @package OCA\UserOpenIDC\Hooks
@@ -44,6 +46,8 @@ class UserHooks {
 	private $attrMapper;
 	/** @var AccountMapper */
 	private $accMapper;
+	/** @var IdentityMapper */
+	private $idMapper;
 	/** @var IUserManager */
 	private $userManager;
 	/** @var UserInterface */
@@ -72,6 +76,7 @@ class UserHooks {
 	 * @param IRequest $request
 	 * @param AttributeMapper $attrMapper
 	 * @param AccountMapper $accMapper
+	 * @param IdentityMapper $idMapper
 	 * @param IUserManager $userManager
 	 * @param UserInterface $userBackend
 	 * @param SyncService $syncService
@@ -83,7 +88,8 @@ class UserHooks {
 	 * @param string $defaultMailAddress
 	 */
 	public function __construct($appName, IAppConfig $config, IRequest $request,
-		AttributeMapper $attrMapper, AccountMapper $accMapper, IUserManager $userManager,
+		AttributeMapper $attrMapper, AccountMapper $accMapper,
+		IdentityMapper $idMapper, IUserManager $userManager,
 		UserInterface $userBackend, SyncService $syncService,
 		IURLGenerator $urlGenerator, ILogger $logger, IMailer $mailer,
 		\OC_Defaults $defaults, IL10N $l10n, $defaultMailAddress
@@ -93,6 +99,7 @@ class UserHooks {
 		$this->request = $request;
 		$this->attrMapper = $attrMapper;
 		$this->accMapper = $accMapper;
+		$this->idMapper = $idMapper;
 		$this->userManager = $userManager;
 		$this->userBackend = $userBackend;
 		$this->syncService = $syncService;
@@ -175,6 +182,12 @@ class UserHooks {
 				$account->setBackend(UserBackend::class);
 			}
 			$this->accMapper->update($account);
+
+			$identity = $this->idMapper->getIdentityForOCUser($user->getUID());
+			if ($identity) {
+				$identity->setLastSeen(\time());
+				$this->idMapper->update($identity);
+			}
 		}
 	}
 	/**

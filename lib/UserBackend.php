@@ -221,7 +221,7 @@ class UserBackend extends Backend implements IUserBackend {
 					}
 				}
 				$this->idMapper->addIdentity(
-					$oidcUserID, $userid, '', 0
+					$oidcUserID, $userid, '', \time()
 				);
 			}
 		}

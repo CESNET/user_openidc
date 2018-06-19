@@ -164,7 +164,7 @@ class AttributeMapper {
 				$valid = preg_match("/^[a-zA-Z0-9_\.@-]*$/", $value, $match);
 				break;
 			case Util::CLAIM_DN:
-				$valid = preg_match("/^[^<>$#!%&\*\\_\+\.@-]*$/", $value, $match);
+				$valid = preg_match("/^[^<>$#!%&\*\\_\+@]*$/", $value, $match);
 				break;
 			case Util::CLAIM_EMAIL:
 				$valid = filter_var($value, FILTER_VALIDATE_EMAIL);

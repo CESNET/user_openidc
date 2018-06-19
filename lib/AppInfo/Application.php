@@ -75,6 +75,7 @@ class Application extends App {
 					$c->query('Request'),
 					$c->query('AttributeMapper'),
 					$c->query('AccountMapper'),
+					$c->query('IdentityMapper'),
 					$c->query('UserManager'),
 					$c->query('DatabaseBackend'),
 					$c->query('SyncService'),
