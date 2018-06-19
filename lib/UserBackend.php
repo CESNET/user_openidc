@@ -23,6 +23,7 @@ use \OCA\UserOpenIDC\Util;
 use \OCA\UserOpenIDC\Db\IdentityMapper;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
+use \OCA\UserOpenIDC\Exception\UnresolvableMappingException;
 
 /**
  * OpenID Connect User Backend class
@@ -144,6 +145,9 @@ class UserBackend extends Backend implements IUserBackend {
 			} else {
 				return false;
 			}
+		} elseif (!$userid) {
+			$this->logger->warning('Failed to resolve userID', $this->logCtx);
+			return false;
 		}
 		return $userid;
 	}
@@ -172,6 +176,7 @@ class UserBackend extends Backend implements IUserBackend {
 	 * @param string $oidcUserID OIDC User ID
 	 * @param array $altUserIDs list of alternative User IDs
 	 *
+	 * @throws UnresolvableMappingException
 	 * @return string|null effective OC user account ID
 	 */
 	 public function resolveUserID($oidcUserID, $altUserIDs) {
@@ -187,23 +192,22 @@ class UserBackend extends Backend implements IUserBackend {
 			 */
 			$uids = array();
 			foreach ((array)$altUserIDs as $altUid) {
-				$legacyId = $this->legacyIdMapper->getIdentity($altUid);
-				if ($legacyId) {
-					$uids[] = $legacyId->getOcUid();
-					$legacyId->setMigrated(1);
-					$this->legacyIdMapper->update($legacyId);
-				}
+					$uids[] = $this->legacyIdMapper->getOcUid($altUid);
 			}
 			$uids = array_filter(array_unique($uids));
 			if (count($uids) > 1) {
 				//TODO: This should raise some fatal exception
 				// this situation must be handled by admins manually
+				foreach ($uids as $uid) {
+					$mappings[$uid] = $this->legacyIdMapper->getOcUid($uid);
+				}
 				$this->logger->error(
 					'User ' . $oidcUserID
 					. ' has NON-CONVERGENT ID mappings for:'
-					. print_r($altUserIDs, TRUE),
+					. print_r($mappings, TRUE),
 					$this->logCtx
 				);
+				throw new UnresolvableMappingException($mappings);
 				return null;
 			} else {
 				$userid = array_pop($uids);
@@ -218,6 +222,15 @@ class UserBackend extends Backend implements IUserBackend {
 						);
 					} else {
 						$userid = $oidcUserID;
+					}
+				} else {
+					// Mark all altUid mappings as successfully migrated
+					foreach ((array)$altUserIDs as $altUid) {
+						$legacyId = $this->legacyIdMapper->getIdentity($altUid);
+						if ($legacyId) {
+							$legacyId->setMigrated(1);
+							$this->legacyIdMapper->update($legacyId);
+						}
 					}
 				}
 				$this->idMapper->addIdentity(

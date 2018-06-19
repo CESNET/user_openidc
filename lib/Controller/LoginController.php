@@ -21,6 +21,7 @@ use \OCP\AppFramework\Controller;
 use \OCP\AppFramework\Http\RedirectResponse;
 use \OCP\AppFramework\Http\TemplateResponse;
 use \OCA\UserOpenIDC\Util;
+use \OCA\UserOpenIDC\Exception\UnresolvableMappingException;
 
 /**
  * LoginController class responsible for handling
@@ -73,8 +74,11 @@ class LoginController extends Controller {
 	 */
 	public function tryLogin($redirectUrl=null) {
 		$this->logger->debug('Initiating OIDC login', $this->logCtx);
-		$loginResult = $this->session->login('', null);
-
+		try {
+			$loginResult = $this->session->login('', null);
+		} catch (UnresolvableMappingException $e) {
+			return new TemplateResponse('core', '403', ['unresolved_uids' => $e->getMappings()], 'guest');
+		}
 		if ($loginResult) {
 			$user = $this->session->getUser();
 			if ($user) {
@@ -107,7 +111,7 @@ class LoginController extends Controller {
 			Util::unsetOIDCSessionCookie($this->request);
 
 			$this->logger->error('OIDC login failed.', $this->logCtx);
-			return new TemplateResponse('', '403', array(), 'guest');
+			return new TemplateResponse('core', '403', array(), 'guest');
 		}
 	}
 
