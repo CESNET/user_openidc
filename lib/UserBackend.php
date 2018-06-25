@@ -191,6 +191,8 @@ class UserBackend extends Backend implements IUserBackend {
 			 * we will create a mapping of oidcUserID to itself
 			 */
 			$uids = array();
+			$this->logger->info('User' . $oidcUserID . ' has following altUIDs:'
+				. print_r($altUserIDs, TRUE), $this->logCtx);
 			foreach ((array)$altUserIDs as $altUid) {
 					$uids[] = $this->legacyIdMapper->getOcUid($altUid);
 			}
@@ -199,12 +201,15 @@ class UserBackend extends Backend implements IUserBackend {
 				//TODO: This should raise some fatal exception
 				// this situation must be handled by admins manually
 				foreach ($uids as $uid) {
-					$mappings[$uid] = $this->legacyIdMapper->getOcUid($uid);
+					// TODO: if ids are empty then we may need
+					// to check for deleted accounts also!
+					$ids = $this->legacyIdMapper->getAllIdentities($uid);
+					$mappings[$uid] = $ids;
 				}
 				$this->logger->error(
 					'User ' . $oidcUserID
 					. ' has NON-CONVERGENT ID mappings for:'
-					. print_r($mappings, TRUE),
+					. print_r($uids, TRUE),
 					$this->logCtx
 				);
 				throw new UnresolvableMappingException($mappings);

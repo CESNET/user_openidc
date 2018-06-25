@@ -66,7 +66,7 @@ if (!\OC::$CLI && !preg_match($excludedRegex, $requestUri)) {
 	);
 	\OC_App::registerLogIn(
 		array(
-			'name' => $l10n->t('Sign In with OpenID'),
+			'name' => $l10n->t('Sign In to ownCloud'),
 			'href' => $loginRoute
 		)
 	);
