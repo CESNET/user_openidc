@@ -181,6 +181,35 @@ style('user_openidc', 'settings-admin');
 				</label>
 				</td>
 			</tr>
+			</tr><tr>
+				<td>
+				<label for="user-openidc-eligible">
+					<?php p($l->t('Is Eligible')); ?>
+				</label>
+				</td><td>
+				<select name="claim_eligible" id="user-openidc-eligible"
+					class="user-openidc-setting">
+				<?php foreach ($_['oidc_claims'] as $svar => $svalue) : ?>
+					<option value="<?php p($svar); ?>"
+					<?php if ($svar === $_['mapping_eligible']) : ?>
+						selected='selected'
+					<?php endif; ?>>
+					<?php p($svar . ' (' . $svalue . ')'); ?>
+					</option>
+				<?php endforeach;?>
+				</select>
+				<input type="checkbox" class="checkbox user-openidc-required"
+					name="claim_eligible"
+					id="user-openidc-eligible_required" value="0"
+	<?php if (in_array('claim_eligible', $_['required_claims'])) {
+					print_unescaped('checked="checked"');
+	} ?> >
+				</input>
+				<label for="user-openidc-eligible_required">
+					<em><?php p($l->t('Required')); ?></em>
+				</label>
+				</td>
+			</tr>
 			</tbody>
 			</table>
 		</div>

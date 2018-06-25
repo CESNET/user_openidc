@@ -25,6 +25,7 @@ class Util {
 	const CLAIM_DN = 'claim_displayname';
 	const CLAIM_EMAIL = 'claim_email';
 	const CLAIM_ALTUIDS = 'claim_altuids';
+	const CLAIM_ELIGIBLE = 'claim_eligible';
 	const REQUIRED_CLAIMS = 'backend_required_claims';
 	const AUTOUPDATE = 'backend_autoupdate';
 	const STRIP_USERID_DOMAIN = 'backend_stripdomain';

@@ -21,7 +21,7 @@
                 var validSettings = [
                         'claim_userid', 'claim_email', 'claim_displayname',
                         'claim_prefix', 'claim_altuids', 'backend_autoupdate',
-                        'backend_stripdomain', 'backend_mode'
+                        'claim_eligible', 'backend_stripdomain', 'backend_mode'
                 ];
                 if ($.inArray(settingName, validSettings) > -1) {
                         return true;
