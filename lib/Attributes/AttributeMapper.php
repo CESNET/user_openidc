@@ -180,11 +180,11 @@ class AttributeMapper {
 				}
 				break;
 			case Util::CLAIM_ELIGIBLE:
-				$eligibleTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $value);
+				$eligibleTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $value);
 				$valid = ($eligibleTimestamp !== false);
 				if ($valid) {
-					$dtNow = new DateTime(date("Y-m-d H:i:s"));
-					$dtEligible = new DateTime($eligibleTimestamp);
+					$dtNow = new \DateTime(date("Y-m-d H:i:s"));
+					$dtEligible = new \DateTime($value);
 
 					if ($dtEligible->modify('+1 year') < $dtNow) {
 						$valid = false;
