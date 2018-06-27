@@ -23,6 +23,7 @@ use \OCA\UserOpenIDC\Util;
 use \OCA\UserOpenIDC\Db\IdentityMapper;
 use \OCA\UserOpenIDC\Attributes\AttributeMapper;
 use \OCA\UserOpenIDC\Db\Legacy\LegacyIdentityMapper;
+use \OCA\UserOpenIDC\Exception\MissingClaimsException;
 use \OCA\UserOpenIDC\Exception\UnresolvableMappingException;
 
 /**
@@ -102,6 +103,8 @@ class UserBackend extends Backend implements IUserBackend {
 	 *
 	 * Check if the OpenIDC ENV is valid without logging in the user
 	 * returns the user id or false
+	 *
+	 * @throws MissingClaimsException
 	 */
 	public function checkPassword($uid=null, $password=null) {
 		$mode = $this->config->getValue($this->appName, Util::MODE, 'inactive');
@@ -123,6 +126,11 @@ class UserBackend extends Backend implements IUserBackend {
 				. ' . Claims provided: ' . print_r($claimMap, TRUE),
 				$this->logCtx
 			);
+			$missingClaims = array_keys(array_filter(
+				$claimMap, function($v, $k) {
+					return $v == false;
+				}, ARRAY_FILTER_USE_BOTH));
+			throw new MissingClaimsException($missingClaims);
 			return false;
 		}
 

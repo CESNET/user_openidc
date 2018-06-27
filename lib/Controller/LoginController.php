@@ -21,6 +21,7 @@ use \OCP\AppFramework\Controller;
 use \OCP\AppFramework\Http\RedirectResponse;
 use \OCP\AppFramework\Http\TemplateResponse;
 use \OCA\UserOpenIDC\Util;
+use \OCA\UserOpenIDC\Exception\MissingClaimsException;
 use \OCA\UserOpenIDC\Exception\UnresolvableMappingException;
 
 /**
@@ -78,6 +79,8 @@ class LoginController extends Controller {
 			$loginResult = $this->session->login('', null);
 		} catch (UnresolvableMappingException $e) {
 			return new TemplateResponse('core', '403', ['unresolved_uids' => $e->getMappings()], 'guest');
+		} catch (MissingClaimsException $ex) {
+			return new TemplateResponse('core', '403', ['missing_claims' => $ex->getMissingClaims()], 'guest');
 		}
 		if ($loginResult) {
 			$user = $this->session->getUser();
