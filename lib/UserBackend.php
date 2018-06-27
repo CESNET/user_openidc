@@ -105,12 +105,24 @@ class UserBackend extends Backend implements IUserBackend {
 	 */
 	public function checkPassword($uid=null, $password=null) {
 		$mode = $this->config->getValue($this->appName, Util::MODE, 'inactive');
-		if ($mode === 'inactive' || !$this->checkClaims()) {
+		if ($mode === 'inactive') {
 			return false;
 		}
-
 		$userid = $this->attrMapper->getUserID();
 		if (!$userid) {
+			return false;
+		}
+		if (!$this->checkClaims()) {
+			$claims = $this->attrMapper->getRequiredClaims();
+			$claimMap = [];
+			foreach ((array)$claims as $claim) {
+				$claimMap[$claim] = $this->attrMapper->getClaimValue($claim);
+			}
+			$this->logger->info(
+				'Claim check failed for: ' . $userid
+				. ' . Claims provided: ' . print_r($claimMap, TRUE),
+				$this->logCtx
+			);
 			return false;
 		}
 
