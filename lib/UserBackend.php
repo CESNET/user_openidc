@@ -240,7 +240,7 @@ class UserBackend extends Backend implements IUserBackend {
 					// If the user doesn't have any ID
 					// mapping, use the provided one
 					// as the Account User ID
-					if ($stripdomain) {
+					if ($stripdomain === 'yes') {
 						$userid = substr(
 							$oidcUserID, 0,
 							strpos($oidcUserID, '@')
